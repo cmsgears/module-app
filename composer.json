@@ -1,0 +1,20 @@
+{
+	"name": "cmsgears/module-app",
+	"description": "The Application Module required for CMSGears based projects. It provides features specific to manage child applications.",
+	"homepage": "http://www.cmsgears.org",
+	"type": "package",
+	"keywords": [ "yii", "yii2", "cmsgears", "module", "application", "app" ],
+	"license": "GPLv3",
+	"support": {
+        "resources": "http://www.cmsgears.org"
+	},
+	"autoload": {
+		"psr-4": {
+			"cmsgears\\app\\": ""
+		}
+	},
+    "require": {
+        "php": ">=7.0.0",
+        "cmsgears/module-core": "*"
+    }
+}
