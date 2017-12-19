@@ -43,8 +43,6 @@ class m171218_141522_app extends \yii\db\Migration {
 		$this->createTable( $this->prefix . 'app', [
 			'id' => $this->bigPrimaryKey( 20 ),
 			'themeId' => $this->bigInteger( 20 ),
-			'createdBy' => $this->bigInteger( 20 )->notNull(),
-			'modifiedBy' => $this->bigInteger( 20 ),
 			'name' => $this->string( Yii::$app->core->xLargeText )->notNull(),
 			'slug' => $this->string( Yii::$app->core->xxLargeText )->notNull(),
 			'title' => $this->string( Yii::$app->core->xxxLargeText )->defaultValue( null ),
