@@ -1,6 +1,22 @@
 <?php
+/**
+ * This file is part of CMSGears Framework. Please view License file distributed
+ * with the source code for license details.
+ *
+ * @link https://www.cmsgears.org/
+ * @copyright Copyright (c) 2015 VulpineCode Technologies Pvt. Ltd.
+ */
 
-class m171218_141522_app extends \yii\db\Migration {
+// CMG Imports
+use cmsgears\core\common\base\Migration;
+
+/**
+ * The app migration inserts the database tables of app module. It also insert the foreign
+ * keys if FK flag of migration component is true.
+ *
+ * @since 1.0.0
+ */
+class m171218_141522_app extends Migration {
 
 	// Public Variables
 
@@ -31,6 +47,7 @@ class m171218_141522_app extends \yii\db\Migration {
 
 		// Application
 		$this->upApp();
+		$this->upAppMeta();
 
 		if( $this->fk ) {
 
@@ -42,33 +59,59 @@ class m171218_141522_app extends \yii\db\Migration {
 
 		$this->createTable( $this->prefix . 'app', [
 			'id' => $this->bigPrimaryKey( 20 ),
+			'siteId' => $this->bigInteger( 20 ),
 			'themeId' => $this->bigInteger( 20 ),
+			'createdBy' => $this->bigInteger( 20 )->notNull(),
+			'modifiedBy' => $this->bigInteger( 20 ),
 			'name' => $this->string( Yii::$app->core->xLargeText )->notNull(),
 			'slug' => $this->string( Yii::$app->core->xxLargeText )->notNull(),
+			'type' => $this->smallInteger( 6 )->defaultValue( 0 ),
 			'title' => $this->string( Yii::$app->core->xxxLargeText )->defaultValue( null ),
 			'description' => $this->string( Yii::$app->core->xtraLargeText )->defaultValue( null ),
+			'authType' => $this->smallInteger( 6 )->defaultValue( 0 ),
 			'status' => $this->smallInteger( 6 )->defaultValue( 0 ),
-			'visibility' => $this->smallInteger( 6 )->defaultValue( 0 ),
 			'createdAt' => $this->dateTime()->notNull(),
 			'modifiedAt' => $this->dateTime(),
-			// Cached content, JSON data and cached widget JSON data
-			'content' => $this->text(),
-			'data' => $this->text(),
-			'widgetData' => $this->text()
+			'content' => $this->mediumText(),
+			'data' => $this->mediumText(),
+			'gridCache' => $this->longText(),
+			'gridCacheValid' => $this->boolean()->notNull()->defaultValue( false ),
+			'gridCachedAt' => $this->dateTime()
 		], $this->options );
 
-		// Index for columns site, parent, creator and modifier
+		// Index for columns site, theme, creator and modifier
+		$this->createIndex( 'idx_' . $this->prefix . 'app_site', $this->prefix . 'app', 'siteId' );
 		$this->createIndex( 'idx_' . $this->prefix . 'app_theme', $this->prefix . 'app', 'themeId' );
 		$this->createIndex( 'idx_' . $this->prefix . 'app_creator', $this->prefix . 'app', 'createdBy' );
 		$this->createIndex( 'idx_' . $this->prefix . 'app_modifier', $this->prefix . 'app', 'modifiedBy' );
 	}
 
+	private function upAppMeta() {
+
+		$this->createTable( $this->prefix . 'app_meta', [
+			'id' => $this->bigPrimaryKey( 20 ),
+			'modelId' => $this->bigInteger( 20 )->notNull(),
+			'name' => $this->string( Yii::$app->core->xLargeText )->notNull(),
+			'label' => $this->string( Yii::$app->core->xxLargeText )->notNull(),
+			'type' => $this->string( Yii::$app->core->mediumText ),
+			'valueType' => $this->string( Yii::$app->core->mediumText )->notNull()->defaultValue( Meta::VALUE_TYPE_TEXT ),
+			'value' => $this->text()
+		], $this->options );
+
+		// Index for columns parent
+		$this->createIndex( 'idx_' . $this->prefix . 'app_meta_parent', $this->prefix . 'app_meta', 'modelId' );
+	}
+
 	private function generateForeignKeys() {
 
 		// App
+		$this->addForeignKey( 'fk_' . $this->prefix . 'app_site', $this->prefix . 'app', 'siteId', $this->prefix . 'core_site', 'id', 'RESTRICT' );
 		$this->addForeignKey( 'fk_' . $this->prefix . 'app_theme', $this->prefix . 'app', 'siteId', $this->prefix . 'core_theme', 'id', 'RESTRICT' );
 		$this->addForeignKey( 'fk_' . $this->prefix . 'app_creator', $this->prefix . 'app', 'createdBy', $this->prefix . 'core_user', 'id', 'RESTRICT' );
 		$this->addForeignKey( 'fk_' . $this->prefix . 'app_modifier', $this->prefix . 'app', 'modifiedBy', $this->prefix . 'core_user', 'id', 'SET NULL' );
+
+		// App meta
+		$this->addForeignKey( 'fk_' . $this->prefix . 'app_meta_parent', $this->prefix . 'app_meta', 'modelId', $this->prefix . 'app', 'id', 'CASCADE' );
 	}
 
 	public function down() {
@@ -79,6 +122,7 @@ class m171218_141522_app extends \yii\db\Migration {
 		}
 
 		$this->dropTable( $this->prefix . 'app' );
+		$this->dropTable( $this->prefix . 'app_meta' );
 	}
 
 	private function dropForeignKeys() {
@@ -87,5 +131,9 @@ class m171218_141522_app extends \yii\db\Migration {
 		$this->dropForeignKey( 'fk_' . $this->prefix . 'app_theme', $this->prefix . 'app' );
 		$this->dropForeignKey( 'fk_' . $this->prefix . 'app_creator', $this->prefix . 'app' );
 		$this->dropForeignKey( 'fk_' . $this->prefix . 'app_modifier', $this->prefix . 'app' );
+
+		// App meta
+		$this->dropForeignKey( 'fk_' . $this->prefix . 'app_meta_parent', $this->prefix . 'app_meta' );
 	}
+
 }
