@@ -48,6 +48,7 @@ class m171218_141522_app extends Migration {
 		// Application
 		$this->upApp();
 		$this->upAppMeta();
+		$this->upAppFollower();
 
 		if( $this->fk ) {
 
@@ -94,12 +95,32 @@ class m171218_141522_app extends Migration {
 			'name' => $this->string( Yii::$app->core->xLargeText )->notNull(),
 			'label' => $this->string( Yii::$app->core->xxLargeText )->notNull(),
 			'type' => $this->string( Yii::$app->core->mediumText ),
+			'active' => $this->boolean()->defaultValue( false ),
 			'valueType' => $this->string( Yii::$app->core->mediumText )->notNull()->defaultValue( Meta::VALUE_TYPE_TEXT ),
-			'value' => $this->text()
+			'value' => $this->text(),
+			'data' => $this->mediumText()
 		], $this->options );
 
 		// Index for columns parent
 		$this->createIndex( 'idx_' . $this->prefix . 'app_meta_parent', $this->prefix . 'app_meta', 'modelId' );
+	}
+
+	private function upAppFollower() {
+
+        $this->createTable( $this->prefix . 'app_follower', [
+			'id' => $this->bigPrimaryKey( 20 ),
+			'userId' => $this->bigInteger( 20 )->notNull(),
+			'modelId' => $this->bigInteger( 20 )->notNull(),
+			'type' => $this->smallInteger( 6 )->defaultValue( 0 ),
+			'active' => $this->boolean()->notNull()->defaultValue( false ),
+			'createdAt' => $this->dateTime()->notNull(),
+			'modifiedAt' => $this->dateTime(),
+			'data' => $this->mediumText()
+        ], $this->options );
+
+        // Index for columns user and model
+		$this->createIndex( 'idx_' . $this->prefix . 'app_follower_user', $this->prefix . 'app_follower', 'userId' );
+		$this->createIndex( 'idx_' . $this->prefix . 'app_follower_parent', $this->prefix . 'app_follower', 'modelId' );
 	}
 
 	private function generateForeignKeys() {
@@ -112,6 +133,10 @@ class m171218_141522_app extends Migration {
 
 		// App meta
 		$this->addForeignKey( 'fk_' . $this->prefix . 'app_meta_parent', $this->prefix . 'app_meta', 'modelId', $this->prefix . 'app', 'id', 'CASCADE' );
+
+		// App Follower
+        $this->addForeignKey( 'fk_' . $this->prefix . 'app_follower_user', $this->prefix . 'app_follower', 'userId', $this->prefix . 'core_user', 'id', 'CASCADE' );
+		$this->addForeignKey( 'fk_' . $this->prefix . 'app_follower_parent', $this->prefix . 'app_follower', 'modelId', $this->prefix . 'app', 'id', 'CASCADE' );
 	}
 
 	public function down() {
@@ -123,6 +148,7 @@ class m171218_141522_app extends Migration {
 
 		$this->dropTable( $this->prefix . 'app' );
 		$this->dropTable( $this->prefix . 'app_meta' );
+		$this->dropTable( $this->prefix . 'app_follower' );
 	}
 
 	private function dropForeignKeys() {
@@ -134,6 +160,10 @@ class m171218_141522_app extends Migration {
 
 		// App meta
 		$this->dropForeignKey( 'fk_' . $this->prefix . 'app_meta_parent', $this->prefix . 'app_meta' );
+
+		// App Follower
+        $this->addForeignKey( 'fk_' . $this->prefix . 'app_follower_user', $this->prefix . 'app_follower' );
+		$this->addForeignKey( 'fk_' . $this->prefix . 'app_follower_parent', $this->prefix . 'app_follower' );
 	}
 
 }
