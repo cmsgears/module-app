@@ -109,8 +109,8 @@ class m171218_141522_app extends Migration {
 
         $this->createTable( $this->prefix . 'app_follower', [
 			'id' => $this->bigPrimaryKey( 20 ),
-			'userId' => $this->bigInteger( 20 )->notNull(),
 			'modelId' => $this->bigInteger( 20 )->notNull(),
+			'parentId' => $this->bigInteger( 20 )->notNull(),
 			'type' => $this->smallInteger( 6 )->defaultValue( 0 ),
 			'active' => $this->boolean()->notNull()->defaultValue( false ),
 			'createdAt' => $this->dateTime()->notNull(),
@@ -119,8 +119,8 @@ class m171218_141522_app extends Migration {
         ], $this->options );
 
         // Index for columns user and model
-		$this->createIndex( 'idx_' . $this->prefix . 'app_follower_user', $this->prefix . 'app_follower', 'userId' );
-		$this->createIndex( 'idx_' . $this->prefix . 'app_follower_parent', $this->prefix . 'app_follower', 'modelId' );
+		$this->createIndex( 'idx_' . $this->prefix . 'app_follower_user', $this->prefix . 'app_follower', 'modelId' );
+		$this->createIndex( 'idx_' . $this->prefix . 'app_follower_parent', $this->prefix . 'app_follower', 'parentId' );
 	}
 
 	private function generateForeignKeys() {
@@ -135,8 +135,8 @@ class m171218_141522_app extends Migration {
 		$this->addForeignKey( 'fk_' . $this->prefix . 'app_meta_parent', $this->prefix . 'app_meta', 'modelId', $this->prefix . 'app', 'id', 'CASCADE' );
 
 		// App Follower
-        $this->addForeignKey( 'fk_' . $this->prefix . 'app_follower_user', $this->prefix . 'app_follower', 'userId', $this->prefix . 'core_user', 'id', 'CASCADE' );
-		$this->addForeignKey( 'fk_' . $this->prefix . 'app_follower_parent', $this->prefix . 'app_follower', 'modelId', $this->prefix . 'app', 'id', 'CASCADE' );
+        $this->addForeignKey( 'fk_' . $this->prefix . 'app_follower_user', $this->prefix . 'app_follower', 'modelId', $this->prefix . 'core_user', 'id', 'CASCADE' );
+		$this->addForeignKey( 'fk_' . $this->prefix . 'app_follower_parent', $this->prefix . 'app_follower', 'parentId', $this->prefix . 'app', 'id', 'CASCADE' );
 	}
 
 	public function down() {
