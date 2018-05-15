@@ -96,6 +96,7 @@ class m171218_141522_app extends Migration {
 			'label' => $this->string( Yii::$app->core->xxLargeText )->notNull(),
 			'type' => $this->string( Yii::$app->core->mediumText ),
 			'active' => $this->boolean()->defaultValue( false ),
+			'order' => $this->smallInteger( 6 )->defaultValue( 0 ),
 			'valueType' => $this->string( Yii::$app->core->mediumText )->notNull()->defaultValue( Meta::VALUE_TYPE_TEXT ),
 			'value' => $this->text(),
 			'data' => $this->mediumText()
