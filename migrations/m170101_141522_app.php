@@ -8,7 +8,7 @@
  */
 
 // CMG Imports
-use cmsgears\core\common\base\Migration;
+use cmsgears\core\common\models\base\Meta;
 
 /**
  * The app migration inserts the database tables of app module. It also insert the foreign
@@ -16,7 +16,7 @@ use cmsgears\core\common\base\Migration;
  *
  * @since 1.0.0
  */
-class m171218_141522_app extends Migration {
+class m170101_141522_app extends \cmsgears\core\common\base\Migration {
 
 	// Public Variables
 
@@ -30,11 +30,11 @@ class m171218_141522_app extends Migration {
 	public function init() {
 
 		// Table prefix
-		$this->prefix		= Yii::$app->migration->cmgPrefix;
+		$this->prefix = Yii::$app->migration->cmgPrefix;
 
 		// Get the values via config
-		$this->fk			= Yii::$app->migration->isFk();
-		$this->options		= Yii::$app->migration->getTableOptions();
+		$this->fk		= Yii::$app->migration->isFk();
+		$this->options	= Yii::$app->migration->getTableOptions();
 
 		// Default collation
 		if( $this->db->driverName === 'mysql' ) {
@@ -67,6 +67,7 @@ class m171218_141522_app extends Migration {
 			'name' => $this->string( Yii::$app->core->xLargeText )->notNull(),
 			'slug' => $this->string( Yii::$app->core->xxLargeText )->notNull(),
 			'type' => $this->smallInteger( 6 )->defaultValue( 0 ),
+			'icon' => $this->string( Yii::$app->core->largeText )->defaultValue( null ),
 			'title' => $this->string( Yii::$app->core->xxxLargeText )->defaultValue( null ),
 			'description' => $this->string( Yii::$app->core->xtraLargeText )->defaultValue( null ),
 			'authType' => $this->smallInteger( 6 )->defaultValue( 0 ),
@@ -163,8 +164,8 @@ class m171218_141522_app extends Migration {
 		$this->dropForeignKey( 'fk_' . $this->prefix . 'app_meta_parent', $this->prefix . 'app_meta' );
 
 		// App Follower
-        $this->addForeignKey( 'fk_' . $this->prefix . 'app_follower_user', $this->prefix . 'app_follower' );
-		$this->addForeignKey( 'fk_' . $this->prefix . 'app_follower_parent', $this->prefix . 'app_follower' );
+        $this->dropForeignKey( 'fk_' . $this->prefix . 'app_follower_user', $this->prefix . 'app_follower' );
+		$this->dropForeignKey( 'fk_' . $this->prefix . 'app_follower_parent', $this->prefix . 'app_follower' );
 	}
 
 }
