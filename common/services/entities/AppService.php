@@ -8,10 +8,9 @@ use yii\data\Sort;
 // CMG Imports
 use cmsgears\core\common\config\CoreGlobal;
 
-use cmsgears\app\common\models\base\AppTables;
-use cmsgears\app\common\models\entities\App;
-
 use cmsgears\app\common\services\interfaces\entities\IAppService;
+
+use cmsgears\core\common\services\base\EntityService;
 
 use cmsgears\core\common\services\traits\NameTrait;
 use cmsgears\core\common\services\traits\SlugTrait;
@@ -19,7 +18,7 @@ use cmsgears\core\common\services\traits\SlugTrait;
 /**
  * The class AppService is base class to perform database activities for App Entity.
  */
-class AppService extends \cmsgears\core\common\services\base\EntityService implements IAppService {
+class AppService extends EntityService implements IAppService {
 
 	// Variables ---------------------------------------------------
 
@@ -30,8 +29,6 @@ class AppService extends \cmsgears\core\common\services\base\EntityService imple
 	// Public -----------------
 
 	public static $modelClass	= '\cmsgears\app\common\models\entities\App';
-
-	public static $modelTable	= AppTables::TABLE_APP;
 
 	public static $parentType	= CoreGlobal::TYPE_APP;
 
@@ -68,13 +65,19 @@ class AppService extends \cmsgears\core\common\services\base\EntityService imple
 
 	public function getPage( $config = [] ) {
 
-		$modelClass		= static::$modelClass;
-		$modelTable		= static::$modelTable;
+		$modelClass	= static::$modelClass;
+		$modelTable	= $this->getModelTable();
 
 		// Sorting ----------
 
 		$sort = new Sort([
 			'attributes' => [
+				'id' => [
+					'asc' => [ "$modelTable.id" => SORT_ASC ],
+					'desc' => [ "$modelTable.id" => SORT_DESC ],
+					'default' => SORT_DESC,
+					'label' => 'Id'
+				],
 				'name' => [
 					'asc' => [ "$modelTable.name" => SORT_ASC ],
 					'desc' => [ "$modelTable.name" => SORT_DESC ],
@@ -87,17 +90,17 @@ class AppService extends \cmsgears\core\common\services\base\EntityService imple
 					'default' => SORT_DESC,
 					'label' => 'slug'
 				],
+				'title' => [
+					'asc' => [ "$modelTable.title" => SORT_ASC ],
+					'desc' => [ "$modelTable.title" => SORT_DESC ],
+					'default' => SORT_DESC,
+					'label' => 'Title'
+				],
 				'status' => [
 					'asc' => [ "$modelTable.status" => SORT_ASC ],
 					'desc' => [ "$modelTable.status" => SORT_DESC ],
 					'default' => SORT_DESC,
 					'label' => 'Status'
-				],
-				'visibility' => [
-					'asc' => [ "$modelTable.visibility" => SORT_ASC ],
-					'desc' => [ "$modelTable.visibility" => SORT_DESC ],
-					'default' => SORT_DESC,
-					'label' => 'Visibility'
 				]
 			]
 		]);
@@ -119,7 +122,7 @@ class AppService extends \cmsgears\core\common\services\base\EntityService imple
 		// Filter - Status
 		$status	= Yii::$app->request->getQueryParam( 'status' );
 
-		if( isset( $status ) && in_array( $status, App::$statusMap ) ) {
+		if( isset( $status ) && in_array( $status, $modelClass::$statusMap ) ) {
 
 			$config[ 'conditions' ][ "$modelTable.status" ]	= $status;
 		}
@@ -139,8 +142,7 @@ class AppService extends \cmsgears\core\common\services\base\EntityService imple
 
 		$config[ 'report-col' ]	= [
 			'name' => "$modelTable.name",
-			'status' => "$modelTable.status",
-			'visibility' => "$modelTable.visibility"
+			'status' => "$modelTable.status"
 		];
 
 		// Result -----------
@@ -164,14 +166,26 @@ class AppService extends \cmsgears\core\common\services\base\EntityService imple
 
 	public function update( $model, $config = [] ) {
 
-		$attributes = isset( $config[ 'attributes' ] ) ? $config[ 'attributes' ] : [ 'themeId', 'name', 'status', 'visibility' ];
+		$attributes = isset( $config[ 'attributes' ] ) ? $config[ 'attributes' ] : [ 'themeId', 'name', 'title', 'status' ];
 
 		return parent::update( $model, [
 			'attributes' => $attributes
 		]);
 	}
 
+	// Delete -------------
+
+	public function delete( $model, $config = [] ) {
+
+		// Delete model
+		return parent::delete( $model, $config );
+	}
+
+	// Bulk ---------------
+
 	protected function applyBulk( $model, $column, $action, $target, $config = [] ) {
+
+		$modelClass	= static::$modelClass;
 
 		switch( $column ) {
 
@@ -181,15 +195,15 @@ class AppService extends \cmsgears\core\common\services\base\EntityService imple
 
 					case 'active': {
 
-						$model->status = App::STATUS_ACTIVE;
+						$model->status = $modelClass::STATUS_ACTIVE;
 
 						$model->update();
 
 						break;
 					}
-					case 'disabled': {
+					case 'blocked': {
 
-						$model->status = App::STATUS_DISABLED;
+						$model->status = $modelClass::STATUS_BLOCKED;
 
 						$model->update();
 
@@ -216,13 +230,11 @@ class AppService extends \cmsgears\core\common\services\base\EntityService imple
 		}
 	}
 
-	// Delete -------------
+	// Notifications ------
 
-	public function delete( $model, $config = [] ) {
+	// Cache --------------
 
-		// Delete model
-		return parent::delete( $model, $config );
-	}
+	// Additional ---------
 
 	// Static Methods ----------------------------------------------
 
