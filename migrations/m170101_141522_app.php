@@ -62,16 +62,26 @@ class m170101_141522_app extends \cmsgears\core\common\base\Migration {
 			'id' => $this->bigPrimaryKey( 20 ),
 			'siteId' => $this->bigInteger( 20 ),
 			'themeId' => $this->bigInteger( 20 ),
+			'userId' => $this->bigInteger( 20 ),
+			'avatarId' => $this->bigInteger( 20 ),
 			'createdBy' => $this->bigInteger( 20 )->notNull(),
 			'modifiedBy' => $this->bigInteger( 20 ),
 			'name' => $this->string( Yii::$app->core->xLargeText )->notNull(),
 			'slug' => $this->string( Yii::$app->core->xxLargeText )->notNull(),
-			'type' => $this->smallInteger( 6 )->defaultValue( 0 ),
+			'type' => $this->string( Yii::$app->core->mediumText )->notNull(),
 			'icon' => $this->string( Yii::$app->core->largeText )->defaultValue( null ),
+			'texture' => $this->string( Yii::$app->core->largeText )->defaultValue( null ),
 			'title' => $this->string( Yii::$app->core->xxxLargeText )->defaultValue( null ),
 			'description' => $this->string( Yii::$app->core->xtraLargeText )->defaultValue( null ),
-			'authType' => $this->smallInteger( 6 )->defaultValue( 0 ),
 			'status' => $this->smallInteger( 6 )->defaultValue( 0 ),
+			'visibility' => $this->smallInteger( 6 )->defaultValue( 0 ),
+			'order' => $this->smallInteger( 6 )->defaultValue( 0 ),
+			'pinned' => $this->boolean()->notNull()->defaultValue( false ),
+			'featured' => $this->boolean()->notNull()->defaultValue( false ),
+			'popular' => $this->boolean()->notNull()->defaultValue( false ),
+			'reviews' => $this->boolean()->notNull()->defaultValue( false ),
+			'timeZone' => $this->smallInteger( 6 )->defaultValue( 0 ),
+			'authType' => $this->smallInteger( 6 )->defaultValue( 0 ),
 			'createdAt' => $this->dateTime()->notNull(),
 			'modifiedAt' => $this->dateTime(),
 			'content' => $this->mediumText(),
@@ -84,6 +94,8 @@ class m170101_141522_app extends \cmsgears\core\common\base\Migration {
 		// Index for columns site, theme, creator and modifier
 		$this->createIndex( 'idx_' . $this->prefix . 'app_site', $this->prefix . 'app', 'siteId' );
 		$this->createIndex( 'idx_' . $this->prefix . 'app_theme', $this->prefix . 'app', 'themeId' );
+		$this->createIndex( 'idx_' . $this->prefix . 'app_user', $this->prefix . 'app', 'userId' );
+		$this->createIndex( 'idx_' . $this->prefix . 'app_avatar', $this->prefix . 'app', 'avatarId' );
 		$this->createIndex( 'idx_' . $this->prefix . 'app_creator', $this->prefix . 'app', 'createdBy' );
 		$this->createIndex( 'idx_' . $this->prefix . 'app_modifier', $this->prefix . 'app', 'modifiedBy' );
 	}
@@ -97,8 +109,8 @@ class m170101_141522_app extends \cmsgears\core\common\base\Migration {
 			'name' => $this->string( Yii::$app->core->xLargeText )->notNull(),
 			'label' => $this->string( Yii::$app->core->xxLargeText )->notNull(),
 			'type' => $this->string( Yii::$app->core->mediumText )->notNull(),
-			'active' => $this->boolean()->defaultValue( false ),
-			'order' => $this->smallInteger( 6 )->defaultValue( 0 ),
+			'active' => $this->boolean()->notNull()->defaultValue( false ),
+			'order' => $this->smallInteger( 6 )->notNull()->defaultValue( 0 ),
 			'valueType' => $this->string( Yii::$app->core->mediumText )->notNull()->defaultValue( Meta::VALUE_TYPE_TEXT ),
 			'value' => $this->text(),
 			'data' => $this->mediumText()
@@ -115,10 +127,11 @@ class m170101_141522_app extends \cmsgears\core\common\base\Migration {
 			'modelId' => $this->bigInteger( 20 )->notNull(),
 			'parentId' => $this->bigInteger( 20 )->notNull(),
 			'type' => $this->string( Yii::$app->core->mediumText )->notNull(),
-			'order' => $this->smallInteger( 6 )->defaultValue( 0 ),
+			'order' => $this->smallInteger( 6 )->notNull()->defaultValue( 0 ),
 			'active' => $this->boolean()->notNull()->defaultValue( true ),
 			'pinned' => $this->boolean()->notNull()->defaultValue( false ),
 			'featured' => $this->boolean()->notNull()->defaultValue( false ),
+			'popular' => $this->boolean()->notNull()->defaultValue( false ),
 			'createdAt' => $this->dateTime()->notNull(),
 			'modifiedAt' => $this->dateTime(),
 			'data' => $this->mediumText()
@@ -134,6 +147,8 @@ class m170101_141522_app extends \cmsgears\core\common\base\Migration {
 		// App
 		$this->addForeignKey( 'fk_' . $this->prefix . 'app_site', $this->prefix . 'app', 'siteId', $this->prefix . 'core_site', 'id', 'RESTRICT' );
 		$this->addForeignKey( 'fk_' . $this->prefix . 'app_theme', $this->prefix . 'app', 'siteId', $this->prefix . 'core_theme', 'id', 'RESTRICT' );
+		$this->addForeignKey( 'fk_' . $this->prefix . 'app_user', $this->prefix . 'app', 'userId', $this->prefix . 'core_user', 'id', 'RESTRICT' );
+		$this->addForeignKey( 'fk_' . $this->prefix . 'app_avatar', $this->prefix . 'app', 'avatarId', $this->prefix . 'core_file', 'id', 'SET NULL' );
 		$this->addForeignKey( 'fk_' . $this->prefix . 'app_creator', $this->prefix . 'app', 'createdBy', $this->prefix . 'core_user', 'id', 'RESTRICT' );
 		$this->addForeignKey( 'fk_' . $this->prefix . 'app_modifier', $this->prefix . 'app', 'modifiedBy', $this->prefix . 'core_user', 'id', 'SET NULL' );
 
@@ -160,7 +175,10 @@ class m170101_141522_app extends \cmsgears\core\common\base\Migration {
 	private function dropForeignKeys() {
 
 		// App
+		$this->dropForeignKey( 'fk_' . $this->prefix . 'app_site', $this->prefix . 'app' );
 		$this->dropForeignKey( 'fk_' . $this->prefix . 'app_theme', $this->prefix . 'app' );
+		$this->dropForeignKey( 'fk_' . $this->prefix . 'app_user', $this->prefix . 'app' );
+		$this->dropForeignKey( 'fk_' . $this->prefix . 'app_avatar', $this->prefix . 'app' );
 		$this->dropForeignKey( 'fk_' . $this->prefix . 'app_creator', $this->prefix . 'app' );
 		$this->dropForeignKey( 'fk_' . $this->prefix . 'app_modifier', $this->prefix . 'app' );
 
